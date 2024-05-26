@@ -29,4 +29,5 @@ class Models:
 __all__ = [
     RequestsParams,
     Models,
+    DataBase
 ]
