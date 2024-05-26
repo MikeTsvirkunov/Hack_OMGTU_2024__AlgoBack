@@ -1,0 +1,16 @@
+pyvespa
+setuptools
+keras
+transformers
+torch -f https://download.pytorch.org/whl/cu118
+torchvision -f https://download.pytorch.org/whl/cu118
+torchaudio -f https://download.pytorch.org/whl/cu118
+bs4
+selenium==4.18.1
+undetected-chromedriver
+catboost
+yellowbrick
+umap-learn==0.2.0
+fastapi
+scikit-learn
+chromadb

@@ -1,0 +1,10 @@
+#clusterization.agglomerative
+["agglomerative_embedings"]
+n_clusters=2
+["sequention"]
+n_clusters=2
+
+#prediction.catboost
+["catboost_embedings"]
+
+
