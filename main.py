@@ -54,33 +54,53 @@ async def read_item(data: DifferentLinksModel):
 @app.post("/compare_links/{method}{req_img}")
 async def read_item(method: str, req_img: int, data: DifferentLinksModel):
     list_of_vectors = []
-    for link in data.links:
+    y = []
+    for i, link in enumerate(data.links):
         if method == 'embeding':
             html_code = parse_site_by_requests(link)
             html_vectors = vectorize_html(html_code)
             list_of_vectors.append(
                 html_vectors.mean(dim=0).detach().numpy()
             )
+            y.append(i)
         elif method == 'sequential':
             html_code = parse_site_by_requests(link)
             html_vectors = vectorize_html(html_code)
             list_of_vectors += html_vectors.detach().numpy().tolist()
+            y += np.full(html_vectors.shape[0], i).tolist()
         else:
             raise HTTPException(status_code=404, detail="Method not found")
     
     r, c = clusterization_pipeline(list_of_vectors)
     r = np.array(r)
+    c = c.tolist()
     my_stringIObytes = io.BytesIO()
     plt.scatter(r[:, 0], r[:, 1], c)
     plt.savefig(my_stringIObytes, format='jpg')
     my_stringIObytes.seek(0)
     my_base64_jpgData = base64.b64encode(my_stringIObytes.read()).decode()
-    return JSONResponse(
-        content={
-            'clusted_urls': {l_i: c_i  for l_i, c_i in zip(data.links, c.tolist())},
-            'scatter': my_base64_jpgData
-        } if bool(req_img) else {
-            'clusted_urls': {l_i: c_i  for l_i, c_i in zip(data.links, c.tolist())},
+    d = dict()
+    if method == 'embeding':
+        d = {
+            l_i: c_i  for l_i, c_i in zip(data.links, c)
         }
+    else:
+        for i, l in enumerate(data.links):
+            k = 0
+            d[l] = dict()
+            for j, c_j in zip(y, c):
+                if j == i:
+                    d[l][k] = c_j
+                    k+=1
+    if bool(req_img):
+        my_stringIObytes = io.BytesIO()
+        plt.scatter(r[:, 0], r[:, 1], c)
+        plt.savefig(my_stringIObytes, format='jpg')
+        my_stringIObytes.seek(0)
+        my_base64_jpgData = base64.b64encode(my_stringIObytes.read()).decode()
+        d['scatter'] = my_base64_jpgData
+
+    return JSONResponse(
+        content=d
     )
 
